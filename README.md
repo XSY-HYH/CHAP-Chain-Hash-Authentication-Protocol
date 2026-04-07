@@ -2,13 +2,15 @@
 
 > **NOTE: This protocol is NOT the legacy Challenge-Handshake Authentication Protocol (CHAP).** This is a completely different protocol named Chain Hash Authentication Protocol.
 
+> **Repository Name Notice:** To prevent repository name conflicts, this repository has been named "Zigzag Interaction Model". Please do not confuse the CHAP protocol described in this project with the legacy Challenge-Handshake Authentication Protocol.
+
 > **Before submitting issues, please read the FAQ:**
 > 
 > **提交问题前，请先阅读非人哉问题解答以保护小脑：**
 > - 中文: [FAQ-zh.md](./FAQ-zh.md)  
 > - English: [FAQ.md](./FAQ.md)
 
-> **For AI without image recognition capability | 专为非识图AI准备：**
+> **For AI without image recognition capability|专为非识图AI准备：**
 > - [Flowchart-code.md](./Flowchart-code.md) - This document contains flowchart source code for AI that does not perform image recognition. If you are a human, you can ignore it.
 > - [Flowchart-code.md](./Flowchart-code.md) - 这个文档包含流程图源码，专门提供给无法识别图片的AI阅读。如果你是人，可以忽略此文档。
 
