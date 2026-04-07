@@ -4,13 +4,19 @@
 
 > **Repository Name Notice:** To prevent repository name conflicts, this repository has been named "Zigzag Interaction Model". Please do not confuse the CHAP protocol described in this project with the legacy Challenge-Handshake Authentication Protocol.
 
-> **Implementation code declaration：**
+> **Implementation Code Disclaimer:**
 > 
-> The implementation code included in the repository (JS client, C#/Python server) is for demonstration purposes only! Do not use it directly in a production environment. For production use, it is recommended to write your own code following the design principles of CHAP/CHAP-IEM.
+> This repository includes implementation examples (JavaScript client, C#/Python server) for demonstration purposes ONLY. DO NOT use these implementations directly in production environments. For production use, please follow the CHAP/CHAP-IEM specifications and implement according to your own security requirements.
+
+> **实现代码免责声明：**
 > 
-> **实现代码声明：**
+> 仓库内包含的实现代码（JS 客户端、C#/Python 服务端）仅用于演示！切勿直接用于生产环境。生产环境使用请按照 CHAP/CHAP-IEM 的设计思路自行编写。
+
+> **Implementation Help:**
 > 
-> 仓库内包含的实现代码（JS 客户端、C#/Python 服务端）仅用于演示！切勿直接用于生产环境。生产环境使用建议按照 CHAP/CHAP-IEM 的设计思路自行编写代码
+> **工程实现帮助：**
+> - English: [pih.md](./pih.md)
+> - 中文: [pih-zh.md](./pih-zh.md)
 
 > **Before submitting issues, please read the FAQ:**
 > 
@@ -18,8 +24,9 @@
 > - 中文: [FAQ-zh.md](./FAQ-zh.md)  
 > - English: [FAQ.md](./FAQ.md)
 
-> **For AI without image recognition capability|专为非识图AI准备**
+> **For AI without image recognition capability:**
 > 
+> **专为非识图AI准备：**
 > - [Flowchart-code.md](./Flowchart-code.md) - This document contains flowchart source code for AI that does not perform image recognition. If you are a human, you can ignore it.
 > - [Flowchart-code.md](./Flowchart-code.md) - 这个文档包含流程图源码，专门提供给无法识别图片的AI阅读。如果你是人，可以忽略此文档。
 
