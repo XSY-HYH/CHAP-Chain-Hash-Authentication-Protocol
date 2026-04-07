@@ -190,7 +190,7 @@ sequenceDiagram
             S-->>C: Error, connection closed
         end
         S->>C: 2. Response = AES256_K(OK + ID_1)
-        C->>C: Decrypt with K<br/>Obtain ID_1<br/>Current encryption key = ID_1 (K discarded)
+        C->>C: Decrypt with K<br/>Obtain ID_1<br/>Current encryption key = ID_1<br/>(K retained for recovery only)
     end
 
     rect rgb(128, 128, 128)
@@ -216,10 +216,18 @@ sequenceDiagram
         C->>C: Local key = ID_3
         C->>S: 7. Operation Packet = AES256_ID3(command)
         S->>S: Decrypt with ID_3<br/>But ID_3 is no longer valid<br/>(Current key is ID_4)
-        Note over S: Cannot encrypt response with ID_3<br/>(ID_3 has been destroyed)
-        S->>C: 8. Recovery Instruction = "out_of_sync"<br/>Require re-authentication
-        C->>S: 9. Re-authenticate (restart from login phase)
-        Note over C,S: New key chain established: K' -> ID_1' -> ID_2' -> ...
+        
+        Note over S: [Auto Recovery using K (recovery channel)]
+        S->>C: 8. Recovery Packet = AES256_K("resync" + ID_4 + "please update local ID")
+        
+        C->>C: Decrypt with K (retained since login)<br/>Obtain ID_4<br/>Update encryption key to ID_4
+        
+        C->>S: 9. Ack Packet = AES256_ID4("resync_ack")
+        
+        S->>S: Verify ID_4 valid ✓
+        S->>C: 10. Response = AES256_ID4("resync_ok")
+        
+        Note over C,S: Key chain continues: ... → ID_3 → ID_4 → ID_5 → ...
     end
 
     rect rgb(70, 130, 255)
@@ -231,7 +239,7 @@ sequenceDiagram
         S-->>A: Decrypt fails, rejected
     end
 
-    Note over C,S: Key chain: K -> ID_1 -> ID_2 -> ID_3 -> ...<br/>Each operation uses current ID as encryption key<br/>Out of sync -> re-authentication required
+    Note over C,S: Key chain: K → ID_1 → ID_2 → ID_3 → ...<br/>Each operation uses current ID as encryption key<br/>K retained for recovery channel only → forward secrecy preserved
 CHAP-IEM-zh:
 sequenceDiagram
     participant C as 客户端
@@ -247,7 +255,7 @@ sequenceDiagram
             S-->>C: 错误，连接断开
         end
         S->>C: ② 响应包 = AES256_K(OK + ID_1)
-        C->>C: 用 K 解密<br/>获得 ID_1<br/>当前加密密钥 = ID_1（弃用 K）
+        C->>C: 用 K 解密<br/>获得 ID_1<br/>当前加密密钥 = ID_1<br/>（K 保留仅用于恢复通道）
     end
 
     rect rgb(128, 128, 128)
@@ -273,10 +281,18 @@ sequenceDiagram
         C->>C: 本地密钥 = ID_3
         C->>S: ⑦ 操作包 = AES256_ID3(操作指令)
         S->>S: 用 ID_3 解密成功<br/>但 ID_3 已失效<br/>（当前有效密钥为 ID_4）
-        Note over S: 无法用 ID_3 加密响应<br/>（ID_3 已被销毁）
-        S->>C: ⑧ 恢复指令 = "out_of_sync"<br/>要求重新登录
-        C->>S: ⑨ 重新登录（从登录阶段重新开始）
-        Note over C,S: 新密钥链建立：K' → ID_1' → ID_2' → ...
+        
+        Note over S: 【自动恢复 - 使用 K 作为恢复通道】
+        S->>C: ⑧ 恢复包 = AES256_K("resync" + ID_4 + "请更新本地ID")
+        
+        C->>C: 用 K（登录后一直保留）解密<br/>获得 ID_4<br/>更新加密密钥为 ID_4
+        
+        C->>S: ⑨ 确认包 = AES256_ID4("resync_ack")
+        
+        S->>S: 校验 ID_4 有效 ✓
+        S->>C: ⑩ 响应包 = AES256_ID4("resync_ok")
+        
+        Note over C,S: 密钥链继续：... → ID_3 → ID_4 → ID_5 → ...
     end
 
     rect rgb(70, 130, 255)
@@ -288,5 +304,4 @@ sequenceDiagram
         S-->>A: 解密失败，拒绝
     end
 
-    Note over C,S: 密钥链：K → ID_1 → ID_2 → ID_3 → ...<br/>每次操作使用当前 ID 作为加密密钥<br/>密钥不同步 → 需要重新登录
-    
+    Note over C,S: 密钥链：K → ID_1 → ID_2 → ID_3 → ...<br/>每次操作使用当前 ID 作为加密密钥<br/>K 仅用于恢复通道 → 前向安全不受影响
