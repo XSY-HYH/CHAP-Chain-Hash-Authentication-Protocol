@@ -8,7 +8,7 @@
 > 
 > This repository includes implementation examples (JavaScript client, C#/Python server) for demonstration purposes ONLY. DO NOT use these implementations directly in production environments. For production use, please follow the CHAP/CHAP-IEM specifications and implement according to your own security requirements.
 > 
-仓库内包含的实现代码（JS 客户端、C#/Python 服务端）仅用于演示！切勿直接用于生产环境。生产环境使用请按照 CHAP/CHAP-IEM 的设计思路自行编写。
+> 仓库内包含的实现代码（JS 客户端、C#/Python 服务端）仅用于演示！切勿直接用于生产环境。生产环境使用请按照 CHAP/CHAP-IEM 的设计思路自行编写。
 
 > **Implementation Help|工程实现帮助**
 > 
@@ -94,7 +94,7 @@ CHAP-IEM (ID Encryption Mode) is a derivative variant of standard CHAP. The core
 - Login phase uses pre-shared key K (same as standard CHAP)
 - Subsequent operations use the current ID as the encryption key
 - Keys change continuously, providing forward secrecy
-- No automatic sync recovery; requires re-authentication when out of sync
+- Automatic sync recovery using K (same as standard CHAP) — the pre-shared key K is retained for recovery purposes only, not used for operation encryption
 
 **Cryptographic note for CHAP-IEM**: The ID values used as encryption keys must meet the same security requirements as any AES-256 key. Implementations should ensure IDs have sufficient entropy (at least 256 bits) or apply a KDF (Key Derivation Function) to shorter IDs before using them as encryption keys.
 
@@ -124,9 +124,9 @@ CHAP-IEM (ID Encryption Mode) is a derivative variant of standard CHAP. The core
 |---------|------|----------|
 | Encryption Key | Fixed pre-shared key K | Switches from K to current ID |
 | ID Purpose | Session identifier only | Identifier + encryption key |
-| Exception Recovery | Automatic sync via K | Re-authentication required |
+| Exception Recovery | Automatic sync via K | Automatic sync via K (recovery channel uses K, operation encryption uses ID chain) |
 | Forward Secrecy | Not supported | Supported |
-| Best For | Connection continuity | High security with short sessions |
+| Best For | Maximum compatibility, simple implementation | Forward secrecy with automatic recovery |
 
 ---
 
