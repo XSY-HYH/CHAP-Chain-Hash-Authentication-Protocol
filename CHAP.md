@@ -1,5 +1,9 @@
 # CHAP Protocol and Zigzag Interaction Model (ZIM)
 
+> **NOTE: This protocol is NOT the legacy Challenge-Handshake Authentication Protocol (CHAP).** This is a completely different protocol named Chain Hash Authentication Protocol.
+
+---
+
 ## I. Protocol Positioning
 
 CHAP (Chain Hash Authentication Protocol) is a general-purpose protocol that can theoretically adapt to various transport protocols including HTTP, HTTPS, TCP, and WebSocket.
@@ -8,7 +12,11 @@ The core design goal of CHAP is connection state management, not multi-user auth
 
 CHAP is extensible. The original version is indeed not suitable for multiple users, but its derived variants (such as CHAP-IEM, i.e., ID Encryption Mode) can theoretically adapt to a wider range of use cases.
 
+---
+
 ## II. Core Workflow
+
+![CHAP Flowchart](./chap.png)
 
 The client and server must pre-share the same key. The entire interaction flow is as follows:
 
@@ -32,7 +40,9 @@ The client and server must pre-share the same key. The entire interaction flow i
 10. The server encrypts the new ID along with the operation result and returns it to the client
 11. The client decrypts the packet to obtain the new ID for the next operation
 
-Example: Assume the login response returns ID 1. For the next packet, the client must encrypt the packet using the key, including both the operation data and ID 1. After decrypting and verifying ID 1, the server destroys ID 1, generates ID 2, then encrypts ID 2 along with the result and returns it to the client. Subsequent operations follow the same pattern.
+**Example**: Assume the login response returns ID 1. For the next packet, the client must encrypt the packet using the key, including both the operation data and ID 1. After decrypting and verifying ID 1, the server destroys ID 1, generates ID 2, then encrypts ID 2 along with the result and returns it to the client. Subsequent operations follow the same pattern.
+
+---
 
 ## III. Exception Recovery Mechanism
 
@@ -46,9 +56,13 @@ When a response packet is lost, causing the client's ID to become out of sync wi
 
 For the CHAP-IEM variant (where the ID is used directly as the encryption key), out-of-sync conditions require the client to re-authenticate in order to rebuild the key chain.
 
+---
+
 ## IV. Security Characteristics
 
 An attacker cannot decrypt intercepted ciphertext without the key, nor can they read the ID contained within. Even if the attacker replays an old packet, the server will reject the operation directly because the ID has already been destroyed.
+
+---
 
 ## V. Deeper Essence: Zigzag Interaction Model (ZIM)
 
