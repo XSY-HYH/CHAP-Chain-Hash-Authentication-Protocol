@@ -1,8 +1,14 @@
 # CHAP-IEM Technical Document
 
+> **NOTE: This protocol is NOT the legacy Challenge-Handshake Authentication Protocol (CHAP).** This is a completely different protocol named Chain Hash Authentication Protocol. CHAP-IEM is a derivative variant of Chain Hash Authentication Protocol.
+
+---
+
 ## I. Overview
 
 CHAP-IEM (ID Encryption Mode) is a derivative variant of the standard CHAP protocol. The core difference between the two is that standard CHAP always uses a pre-shared key (user password hash) for encryption, while CHAP-IEM switches to a chained mode where the ID itself serves as the encryption key after login completion.
+
+---
 
 ## II. Core Differences from Standard CHAP
 
@@ -13,7 +19,11 @@ CHAP-IEM (ID Encryption Mode) is a derivative variant of the standard CHAP proto
 | Key Update | Key K remains fixed | Key changes chained with ID |
 | Exception Recovery | Server pushes current ID for sync using K | Requires re-authentication to rebuild key chain |
 
+---
+
 ## III. CHAP-IEM Workflow Details
+
+![CHAP-IEM Flowchart](./chap-iem.png)
 
 ### 3.1 Login Phase (Same as Standard CHAP)
 
@@ -59,6 +69,8 @@ The client re-authenticates, obtains a new K and a new ID_1', and restarts the k
 
 **Comparison with Standard CHAP**: In standard CHAP, the server always holds the fixed key K, so it can encrypt and push the current valid ID to the client to complete synchronization without requiring re-authentication. In CHAP-IEM, the key changes with each ID, and the server cannot encrypt information using a destroyed old key, forcing re-authentication.
 
+---
+
 ## IV. Security Analysis
 
 ### 4.1 Attacker Perspective
@@ -82,6 +94,8 @@ The client re-authenticates, obtains a new K and a new ID_1', and restarts the k
 
 When keys become out of sync, re-authentication is mandatory, causing state interruption. If the pre-shared key K from the login phase is compromised, an attacker can complete initial authentication and obtain ID_1, but since K is only used for login, subsequent communications remain protected by the ID chain.
 
+---
+
 ## V. Applicable Scenarios
 
 CHAP-IEM is suitable for the following scenarios:
@@ -96,6 +110,8 @@ Unsuitable scenarios:
 1. Environments with poor network quality and high packet loss rates (frequent re-authentication)
 2. Services requiring long-term maintenance of a single session
 3. Critical systems that cannot tolerate connection interruption
+
+---
 
 ## VI. Summary
 
