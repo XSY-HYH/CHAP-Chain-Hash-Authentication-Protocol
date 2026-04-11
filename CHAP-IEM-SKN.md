@@ -186,3 +186,5 @@ ZIM (Zigzag Interaction Model) → CHAP (fixed key + ID chain) → CHAP-IEM (ID 
 - Retains all IEM features: chained key management, forward secrecy, exception recovery
 - Simple implementation: XOR + SHA256 + AES
 - Key exchange messages can be transmitted in plaintext; no additional encryption layer required
+
+- *Hiss, I always feel like SKN isn't as stable as the IEM variant, so if you really need to use it, just see how things go.*
