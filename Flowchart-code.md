@@ -338,6 +338,194 @@ sequenceDiagram
 
 ---
 
+## CHAP-IEM-SKN
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+
+    Note over C,S: [Pre-shared Phase]
+    Note over C: Holds pre-shared key Y
+    Note over S: Holds pre-shared key Y
+
+    rect rgb(128, 128, 128)
+        Note over C,S: [Key Exchange Phase - Plaintext, No Encryption Required]
+        C->>C: Generate random a
+        S->>S: Generate random b
+        C->>C: A = Y ⊕ a
+        S->>S: B = Y ⊕ b
+        C->>S: Send A
+        S->>C: Send B
+        C->>C: K_base = B ⊕ a = Y ⊕ a ⊕ b
+        S->>S: K_base = A ⊕ b = Y ⊕ a ⊕ b
+        C->>C: K_session = SHA256(K_base)
+        S->>S: K_session = SHA256(K_base)
+        Note over C,S: Discard a, b, K_base
+    end
+
+    rect rgb(128, 128, 128)
+        Note over C,S: [Login Phase]
+        C->>S: Login Packet = AES256_K_session(username)
+        S->>S: Decrypt with K_session, verify username
+        alt Decrypt fails or username invalid
+            S-->>C: Error, connection closed
+        end
+        S->>S: Generate random ID₁ (MUST be cryptographically random)
+        S->>C: Response Packet = AES256_K_session(OK + ID₁)
+        C->>C: Decrypt to obtain ID₁
+        Note over C: Current encryption key = ID₁
+        Note over C: K_session retained for exception recovery
+    end
+
+    rect rgb(128, 128, 128)
+        Note over C,S: [Operation 1 - Using ID₁ as key]
+        C->>C: Encrypt command with ID₁
+        C->>S: Operation Packet = AES256_ID₁(command)
+        S->>S: Decrypt with ID₁
+        S->>S: Execute command
+        S->>S: Generate random ID₂ (MUST be random)
+        S->>C: Response Packet = AES256_ID₁(result + ID₂)
+        C->>C: Decrypt with ID₁
+        C->>C: Update encryption key to ID₂
+    end
+
+    rect rgb(128, 128, 128)
+        Note over C,S: [Operation 2 - Using ID₂ as key]
+        C->>C: Encrypt command with ID₂
+        C->>S: Operation Packet = AES256_ID₂(command)
+        S->>S: Decrypt with ID₂
+        S->>S: Execute command
+        S->>S: Generate random ID₃ (MUST be random)
+        S->>C: Response Packet = AES256_ID₂(result + ID₃)
+        C->>C: Decrypt with ID₂
+        C->>C: Update encryption key to ID₃
+    end
+
+    rect rgb(255, 255, 150)
+        Note over C,S: [Exception: Response lost, key out of sync]
+        C->>C: Local key = ID₃
+        S->>S: Current valid key = ID₄
+        C->>S: Operation Packet = AES256_ID₃(command)
+        S->>S: Decrypt with ID₃ succeeds, but ID₃ is invalid
+        Note over S: Use K_session for recovery packet
+        S->>C: Recovery Packet = AES256_K_session("resync" + ID₄)
+        C->>C: Decrypt with K_session, obtain ID₄
+        C->>C: Update encryption key to ID₄
+        C->>S: Ack Packet = AES256_ID₄("resync_ack")
+        S->>S: Verify ID₄ valid
+        S->>C: Response Packet = AES256_ID₄("resync_ok")
+        Note over C,S: Key chain continues: ID₃ → ID₄ → ID₅ → ...
+    end
+
+    rect rgb(70, 130, 255)
+        Note over A: [Attacker Perspective]
+        Note over A: Intercepts A, B, Login Packet
+        Note over A: Lacks Y → Cannot compute K_session
+        Note over A: Cannot decrypt Login Packet
+        Note over A: Cannot obtain ID₁
+        Note over A: Cannot participate in any valid communication
+    end
+
+    Note over C,S: Key chain: Y → K_session → ID₁ → ID₂ → ID₃ → ...<br/>Key exchange transmitted in plaintext, security depends on confidentiality of Y<br/>K_session used only for login and exception recovery, not for operation chain<br/><br/>⚠️ CRITICAL: All IDs MUST be generated using a cryptographically secure random number generator. Since IDs serve as encryption keys in CHAP-IEM-SKN, predictable IDs completely break the security model.
+```
+
+---
+
+## CHAP-IEM-SKN-zh
+
+```mermaid
+sequenceDiagram
+    participant C as 客户端
+    participant S as 服务端
+
+    Note over C,S: 【预共享阶段】
+    Note over C: 持有预共享密钥 Y
+    Note over S: 持有预共享密钥 Y
+
+    rect rgb(128, 128, 128)
+        Note over C,S: 【密钥交换阶段 - 明文传输，无需加密】
+        C->>C: 生成随机数 a
+        S->>S: 生成随机数 b
+        C->>C: A = Y ⊕ a
+        S->>S: B = Y ⊕ b
+        C->>S: 发送 A
+        S->>C: 发送 B
+        C->>C: K_base = B ⊕ a = Y ⊕ a ⊕ b
+        S->>S: K_base = A ⊕ b = Y ⊕ a ⊕ b
+        C->>C: K_session = SHA256(K_base)
+        S->>S: K_session = SHA256(K_base)
+        Note over C,S: 废弃 a、b、K_base
+    end
+
+    rect rgb(128, 128, 128)
+        Note over C,S: 【登录阶段】
+        C->>S: 登录包 = AES256_K_session(用户名)
+        S->>S: 用 K_session 解密，验证用户名
+        alt 解密失败或用户名无效
+            S-->>C: 错误，连接断开
+        end
+        S->>S: 生成随机 ID₁（必须使用密码学安全随机数）
+        S->>C: 响应包 = AES256_K_session(OK + ID₁)
+        C->>C: 解密得到 ID₁
+        Note over C: 当前加密密钥 = ID₁
+        Note over C: K_session 保留用于异常恢复
+    end
+
+    rect rgb(128, 128, 128)
+        Note over C,S: 【操作一 - 使用 ID₁ 作为密钥】
+        C->>C: 用 ID₁ 加密指令
+        C->>S: 操作包 = AES256_ID₁(操作指令)
+        S->>S: 用 ID₁ 解密
+        S->>S: 执行操作
+        S->>S: 生成随机 ID₂（必须随机）
+        S->>C: 响应包 = AES256_ID₁(操作结果 + ID₂)
+        C->>C: 用 ID₁ 解密
+        C->>C: 更新加密密钥为 ID₂
+    end
+
+    rect rgb(128, 128, 128)
+        Note over C,S: 【操作二 - 使用 ID₂ 作为密钥】
+        C->>C: 用 ID₂ 加密指令
+        C->>S: 操作包 = AES256_ID₂(操作指令)
+        S->>S: 用 ID₂ 解密
+        S->>S: 执行操作
+        S->>S: 生成随机 ID₃（必须随机）
+        S->>C: 响应包 = AES256_ID₂(操作结果 + ID₃)
+        C->>C: 用 ID₂ 解密
+        C->>C: 更新加密密钥为 ID₃
+    end
+
+    rect rgb(255, 255, 150)
+        Note over C,S: 【异常场景：响应包丢失，密钥不同步】
+        C->>C: 本地密钥 = ID₃
+        S->>S: 当前有效密钥 = ID₄
+        C->>S: 操作包 = AES256_ID₃(操作指令)
+        S->>S: 用 ID₃ 解密成功，但 ID₃ 已失效
+        Note over S: 使用 K_session 加密恢复包
+        S->>C: 恢复包 = AES256_K_session("resync" + ID₄)
+        C->>C: 用 K_session 解密，获得 ID₄
+        C->>C: 更新加密密钥为 ID₄
+        C->>S: 确认包 = AES256_ID₄("resync_ack")
+        S->>S: 校验 ID₄ 有效
+        S->>C: 响应包 = AES256_ID₄("resync_ok")
+        Note over C,S: 密钥链继续：ID₃ → ID₄ → ID₅ → ...
+    end
+
+    rect rgb(70, 130, 255)
+        Note over A: 【攻击者视角】
+        Note over A: 截获 A、B、登录包
+        Note over A: 缺少 Y → 无法计算 K_session
+        Note over A: 无法解密登录包
+        Note over A: 无法获取 ID₁
+        Note over A: 无法参与任何有效通信
+    end
+
+    Note over C,S: 密钥链：Y → K_session → ID₁ → ID₂ → ID₃ → ...<br/>密钥交换明文传输，安全性依赖 Y 的机密性<br/>K_session 仅用于登录和异常恢复，不参与操作链<br/><br/>⚠️ 关键安全要求：所有 ID 必须使用密码学安全随机数生成器生成。在 CHAP-IEM-SKN 中 ID 同时作为加密密钥，可预测的 ID 会彻底破坏整个安全模型。
+```
+
+---
+
 ## Summary of Changes
 
 | Location | Change |
@@ -346,3 +534,6 @@ sequenceDiagram
 | Each operation (all diagrams) | Added note: "Generate random ID_n (MUST be random)" |
 | Footer note (CHAP) | Added critical warning about predictable IDs leading to session hijacking |
 | Footer note (CHAP-IEM) | Added critical warning that predictable IDs completely break security model |
+| Footer note (CHAP-IEM-SKN) | Added critical warning that predictable IDs completely break security model |
+| CHAP-IEM-SKN (English) | Full flow diagram including key exchange, login, operations, and exception recovery |
+| CHAP-IEM-SKN-zh (Chinese) | Full flow diagram including key exchange, login, operations, and exception recovery |
